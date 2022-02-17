@@ -10,6 +10,6 @@ contract PremiaMiningProxy is ProxyUpgradeableOwnable {
     constructor(address implementation, uint256 premiaPerYear)
         ProxyUpgradeableOwnable(implementation)
     {
-        PremiaMiningStorage.layout().premiaPerYear = premiaPerYear;
+        PremiaMiningStorage.layout().premiaPerYear = uint128(premiaPerYear);
     }
 }

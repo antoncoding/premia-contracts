@@ -58,7 +58,7 @@ contract PremiaMining is IPremiaMining, OwnableInternal {
     function addPremiaRewards(uint256 _amount) external override onlyOwner {
         PremiaMiningStorage.Layout storage l = PremiaMiningStorage.layout();
         IERC20(PREMIA).safeTransferFrom(msg.sender, address(this), _amount);
-        l.premiaAvailable += _amount;
+        l.premiaAvailable += uint128(_amount);
     }
 
     /**
@@ -109,7 +109,7 @@ contract PremiaMining is IPremiaMining, OwnableInternal {
      * @notice Set new alloc points for an option pool. Can only be called by the owner.
      * @param _premiaPerYear Amount of PREMIA per year to allocate as reward across all pools
      */
-    function setPremiaPerYear(uint256 _premiaPerYear) external onlyOwner {
+    function setPremiaPerYear(uint128 _premiaPerYear) external onlyOwner {
         PremiaMiningStorage.layout().premiaPerYear = _premiaPerYear;
     }
 
@@ -133,13 +133,13 @@ contract PremiaMining is IPremiaMining, OwnableInternal {
         l.totalAllocPoint += (_allocPoints * 2);
 
         l.poolInfo[_pool][true] = PremiaMiningStorage.PoolInfo({
-            allocPoint: _allocPoints,
+            allocPoint: uint128(_allocPoints),
             lastRewardTimestamp: block.timestamp,
             accPremiaPerShare: 0
         });
 
         l.poolInfo[_pool][false] = PremiaMiningStorage.PoolInfo({
-            allocPoint: _allocPoints,
+            allocPoint: uint128(_allocPoints),
             lastRewardTimestamp: block.timestamp,
             accPremiaPerShare: 0
         });
@@ -174,8 +174,8 @@ contract PremiaMining is IPremiaMining, OwnableInternal {
                 l.poolInfo[pool][false].allocPoint +
                 (allocPoints * 2);
 
-            l.poolInfo[pool][true].allocPoint = allocPoints;
-            l.poolInfo[pool][false].allocPoint = allocPoints;
+            l.poolInfo[pool][true].allocPoint = uint128(allocPoints);
+            l.poolInfo[pool][false].allocPoint = uint128(allocPoints);
 
             emit UpdatePoolAlloc(pool, allocPoints);
         }
@@ -194,6 +194,8 @@ contract PremiaMining is IPremiaMining, OwnableInternal {
         uint256 TVL;
         uint256 userTVL;
 
+        // comment: always access 2 storage while only using one.
+        // only view function, no big deal
         {
             (uint256 underlyingTVL, uint256 baseTVL) = IPoolView(_pool)
                 .getTotalTVL();
@@ -286,8 +288,8 @@ contract PremiaMining is IPremiaMining, OwnableInternal {
             premiaReward = l.premiaAvailable;
         }
 
-        l.premiaAvailable -= premiaReward;
-        pool.accPremiaPerShare += (premiaReward * 1e12) / _totalTVL;
+        l.premiaAvailable -= uint128(premiaReward);
+        pool.accPremiaPerShare += uint128(premiaReward * 1e12 / _totalTVL);
         pool.lastRewardTimestamp = block.timestamp;
     }
 
@@ -346,10 +348,10 @@ contract PremiaMining is IPremiaMining, OwnableInternal {
         _updatePool(_pool, _isCallPool, _totalTVL);
 
         user.reward +=
-            ((_userTVLOld * pool.accPremiaPerShare) / 1e12) -
+            uint128((_userTVLOld * pool.accPremiaPerShare) / 1e12) -
             user.rewardDebt;
 
-        user.rewardDebt = (_userTVLNew * pool.accPremiaPerShare) / 1e12;
+        user.rewardDebt = (uint128(_userTVLNew) * pool.accPremiaPerShare) / 1e12;
     }
 
     /**

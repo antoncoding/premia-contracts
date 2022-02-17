@@ -9,15 +9,15 @@ library PremiaMiningStorage {
 
     // Info of each pool.
     struct PoolInfo {
-        uint256 allocPoint; // How many allocation points assigned to this pool. PREMIA to distribute per block.
         uint256 lastRewardTimestamp; // Last timestamp that PREMIA distribution occurs
-        uint256 accPremiaPerShare; // Accumulated PREMIA per share, times 1e12. See below.
+        uint128 allocPoint; // How many allocation points assigned to this pool. PREMIA to distribute per block.
+        uint128 accPremiaPerShare; // Accumulated PREMIA per share, times 1e12. See below.
     }
 
     // Info of each user.
     struct UserInfo {
-        uint256 reward; // Total allocated unclaimed reward
-        uint256 rewardDebt; // Reward debt. See explanation below.
+        uint128 reward; // Total allocated unclaimed reward
+        uint128 rewardDebt; // Reward debt. See explanation below.
         //
         // We do some fancy math here. Basically, any point in time, the amount of PREMIA
         // entitled to a user but is pending to be distributed is:
@@ -33,9 +33,9 @@ library PremiaMiningStorage {
 
     struct Layout {
         // Total PREMIA left to distribute
-        uint256 premiaAvailable;
+        uint128 premiaAvailable;
         // Amount of premia distributed per year
-        uint256 premiaPerYear;
+        uint128 premiaPerYear;
         // pool -> isCallPool -> PoolInfo
         mapping(address => mapping(bool => PoolInfo)) poolInfo;
         // pool -> isCallPool -> user -> UserInfo
